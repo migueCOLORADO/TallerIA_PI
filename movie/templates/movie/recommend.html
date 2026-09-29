@@ -35,6 +35,11 @@
     <p class="recommend-error">{{ error }}</p>
     {% endif %}
 
+    {% if model_loading %}
+    <p class="recommend-intro" id="model-loading">Cargando el modelo de IA (solo pasa la primera vez
+    tras iniciar el servidor, tarda unos segundos). Reintentando automáticamente…</p>
+    {% endif %}
+
     {% if movie %}
     <h2 class="mb-3" style="color: var(--text-light);">Tu recomendación</h2>
     <div class="card recommend-result mb-4">
@@ -85,11 +90,25 @@
 
 {% block extra_js %}
 <script>
+    const recommendForm = document.querySelector('.recommend-form');
+    const recommendBtn = recommendForm.querySelector('button[type="submit"]');
+    const setLoading = (loading) => {
+        recommendBtn.disabled = loading;
+        recommendBtn.textContent = loading ? 'Buscando…' : 'Recomendar';
+    };
+    recommendForm.addEventListener('submit', () => setLoading(true));
+    // Al volver con "atrás" el navegador restaura la página desde caché: reactivar el botón
+    window.addEventListener('pageshow', () => setLoading(false));
+
+    {% if model_loading %}
+    // El modelo se está cargando en el servidor: reenviar el mismo prompt en unos segundos
+    setTimeout(() => recommendForm.requestSubmit(), 4000);
+    {% endif %}
+
     document.querySelectorAll('.recommend-chip').forEach((chip) => {
         chip.addEventListener('click', () => {
-            const input = document.getElementById('id_prompt');
-            input.value = chip.dataset.prompt;
-            input.form.submit();
+            document.getElementById('id_prompt').value = chip.dataset.prompt;
+            recommendForm.requestSubmit();
         });
     });
 </script>

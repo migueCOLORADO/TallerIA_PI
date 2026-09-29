@@ -1,5 +1,6 @@
 import base64
 import io
+import logging
 from collections import Counter
 
 import matplotlib
@@ -12,8 +13,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .ai_utils import rank_movies
+from .ai_utils import embedding_model_loading, rank_movies
 from .models import Movie, Reaction, Review
+
+logger = logging.getLogger(__name__)
 
 
 def _reaction_stats(movie):
@@ -212,8 +215,17 @@ def recommend(request):
 
         if not prompt:
             context["error"] = "Escribe qué tipo de película quieres ver."
+        elif embedding_model_loading():
+            # No bloquear el request: la página reintenta sola cuando el modelo esté listo
+            context["model_loading"] = True
         else:
-            ranking = rank_movies(prompt, Movie.objects.exclude(emb=None))
+            try:
+                ranking = rank_movies(prompt, Movie.objects.exclude(emb=None))
+            except Exception as exc:
+                logger.exception("Fallo al generar la recomendación")
+                return render(request, "movie/recommend.html", {
+                    **context, "error": f"No se pudo generar la recomendación: {exc}",
+                })
             if not ranking:
                 context["error"] = (
                     "Todavía no hay películas con embeddings para comparar. "

@@ -4,7 +4,7 @@
 - sentence-transformers (modelo local) para embeddings y similitud coseno.
 """
 import os
-from functools import lru_cache
+import threading
 from pathlib import Path
 
 import numpy as np
@@ -81,18 +81,55 @@ def get_completion(client, prompt, model=CLAUDE_MODEL):
 # Embeddings locales (sentence-transformers)
 # ---------------------------------------------------------------------------
 
-@lru_cache(maxsize=1)
-def get_embedding_model():
-    """Carga el modelo una sola vez por proceso. Usa la copia en caché local si existe
-    (sin tocar la red); solo la primera vez lo descarga del Hugging Face Hub."""
-    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-    os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
-    from sentence_transformers import SentenceTransformer
+_model = None
+_model_lock = threading.Lock()
 
-    try:
-        return SentenceTransformer(EMBEDDING_MODEL, local_files_only=True)
-    except OSError:
-        return SentenceTransformer(EMBEDDING_MODEL)
+
+def get_embedding_model():
+    """Carga el modelo una sola vez por proceso (thread-safe: runserver atiende cada request
+    en un hilo). Usa la copia en caché local si existe (sin tocar la red); solo la primera
+    vez lo descarga del Hugging Face Hub."""
+    global _model
+    if _model is not None:
+        return _model
+    with _model_lock:
+        if _model is None:
+            os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+            os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+            os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+            from sentence_transformers import SentenceTransformer
+
+            try:
+                _model = SentenceTransformer(EMBEDDING_MODEL, device="cpu", local_files_only=True)
+            except OSError:
+                _model = SentenceTransformer(EMBEDDING_MODEL, device="cpu")
+    return _model
+
+
+_preload_thread = None
+
+
+def embedding_model_loading():
+    """True mientras la precarga en segundo plano sigue en curso (importar torch + el modelo
+    tarda 25-40 s en Windows). Sin precarga (tests, comandos) siempre es False."""
+    return _preload_thread is not None and _preload_thread.is_alive()
+
+
+def preload_embedding_model():
+    """Carga el modelo en segundo plano al arrancar el servidor para que el primer
+    "Recomendar" no espere la importación de torch + la carga del modelo."""
+    global _preload_thread
+
+    def _load():
+        try:
+            get_embedding_model()
+            print("[movie] Modelo de embeddings listo.", flush=True)
+        except Exception as exc:  # el request volverá a intentarlo y mostrará el error
+            print(f"[movie] No se pudo precargar el modelo de embeddings: {exc}", flush=True)
+
+    print("[movie] Cargando modelo de embeddings en segundo plano...", flush=True)
+    _preload_thread = threading.Thread(target=_load, name="preload-embeddings", daemon=True)
+    _preload_thread.start()
 
 
 def movie_document(movie):

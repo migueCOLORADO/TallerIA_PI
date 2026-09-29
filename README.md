@@ -152,17 +152,25 @@ URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/ad
 
 ### Capturas
 
-Van en [capturas_taller3/](capturas_taller3/) (lista completa en [capturas_taller3/README.md](capturas_taller3/README.md)):
+1. **Descripción enriquecida con Claude** (`/admin/movie/movie/` → *Carmencita*)
 
-| # | Archivo | Cómo llegar |
-|---|---|---|
-| 1 | `1_admin_descripcion.png` | `/admin/movie/movie/` → *Carmencita* (sinopsis enriquecida) |
-| 2 | `2_peliculas_imagenes.png` | `/movies/?genero=Crimen` o `/` |
-| 3 | `3_movie_similarities.png` | `python manage.py movie_similarities` |
-| 4 | `4_embedding_consola.png` | `python manage.py show_random_embedding` |
-| 5 | `5_recommend.png` | `/recommend/` → "historia de mafia y traición familiar" → **Recomendar** |
-| 6 (opcional) | `6_recommend_movil.png` | `/recommend/` en DevTools, 375 px |
-| 7 (opcional) | `7_montecarlo.png` | `python manage.py montecarlo_recommendation_eval` |
+   ![Admin con la sinopsis enriquecida](capturas_taller3/1_admin_descripcion.png)
+
+2. **Pósters generados con Higgsfield** (`/movies/`)
+
+   ![Listado con pósters IA](capturas_taller3/2_peliculas_imagenes.png)
+
+3. **Similitud entre películas y un prompt** (`python manage.py movie_similarities`)
+
+   ![Consola de movie_similarities](capturas_taller3/3_movie_similarities.png)
+
+4. **Embedding de una película al azar** (`python manage.py show_random_embedding`)
+
+   ![Consola con un embedding](capturas_taller3/4_embedding_consola.png)
+
+5. **Sistema de recomendación** (`/recommend/`)
+
+   ![Recomendación en /recommend/](capturas_taller3/5_recommend.png)
 
 ## Comandos
 
@@ -235,6 +243,7 @@ Las pruebas de la vista usan el modelo local real (sin APIs externas).
 | PowerShell bloquea `Activate.ps1` | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` |
 | `ANTHROPIC_API_KEY no está definida` | Crear `.env` en la raíz con `ANTHROPIC_API_KEY=...` |
 | Primera ejecución de embeddings lenta / aviso de symlinks en Windows | Es la descarga única del modelo (~470 MB); el aviso es inofensivo |
+| `/recommend/` muestra "Cargando el modelo de IA…" justo después de iniciar el servidor | El modelo se precarga en segundo plano (~25–40 s en Windows); la página reintenta sola y muestra el resultado al terminar |
 | Editar una película con póster IA desde `/admin/` rechaza el campo `poster` | `poster` es `URLField` y guarda rutas relativas (`/media/movie/images/...`); se muestra bien en todas las vistas. No se cambió el campo para no modificar el modelo más allá de `emb` |
 | Higgsfield marca un prompt como NSFW o devuelve imagen en negro | Reescribir el prompt (ver `PROMPT_OVERRIDES` en `aux_files/build_higgsfield_manifest.py`) |
 | Higgsfield responde `429 rate_limit_reached` | Enviar los lotes de forma secuencial, no en paralelo |
