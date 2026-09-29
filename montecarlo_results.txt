@@ -1,0 +1,48 @@
+================================================================
+SIMULACIÓN MONTE CARLO — SISTEMA DE RECOMENDACIÓN
+================================================================
+Fecha:                    2026-09-28 23:37:12
+Modelo de embeddings:     intfloat/multilingual-e5-small (local, sin APIs externas)
+Películas con embedding:  148
+Simulaciones (N):         200
+Semilla aleatoria:        42
+Carga del modelo:         23.76 s (una vez, excluida de los tiempos)
+
+--- Validez ---
+Éxitos:                   200/200 (100.0 %)
+Fallos:                   0
+Similitud en [-1, 1]:     sí
+
+--- Similitud coseno de la película recomendada ---
+Promedio:                 0.8516
+Desviación estándar:      0.0143
+Mínima:                   0.8178
+Máxima:                   0.8985
+
+--- Tiempo de respuesta (embedding del prompt + búsqueda) ---
+Promedio:                 26.9 ms
+Mediana (p50):            26.4 ms
+p95:                      34.3 ms
+Mínimo:                   18.4 ms
+Máximo:                   154.2 ms
+Total de las corridas:    5.38 s
+
+--- Diversidad: 58 películas distintas recomendadas ---
+   17x  The Voyage Across the Impossible
+   13x  A Trip to the Moon
+   12x  Her
+   11x  Se7en
+   10x  The Music Lover
+    8x  The Office
+    7x  Parasite
+    7x  Interstellar
+    6x  The Avengers
+    6x  Money Heist
+
+--- Ejemplos de prompts generados ---
+  - aventura con viajes en el tiempo y un pueblo misterioso
+  - una serie de ciencia ficción emotiva sobre dinosaurios
+  - misterio con un viaje a la luna y una familia disfuncional
+  - película de acción sobre una familia disfuncional
+  - historia oscura sobre viajes en el tiempo
+================================================================
