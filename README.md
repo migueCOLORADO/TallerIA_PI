@@ -172,6 +172,10 @@ URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/ad
 
    ![Recomendación en /recommend/](capturas_taller3/5_recommend.png)
 
+### Entregable en PDF
+
+Documento con evidencia completa (links de repositorio, comando ejecutado y captura por cada requerimiento del taller): [Taller3_TallerIA_PI_Entregable.pdf](Taller3_TallerIA_PI_Entregable.pdf).
+
 ## Comandos
 
 | Comando | Qué hace | ¿Gasta API? |
