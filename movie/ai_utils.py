@@ -78,9 +78,16 @@ def get_completion(client, prompt, model=CLAUDE_MODEL):
 
 @lru_cache(maxsize=1)
 def get_embedding_model():
+    """Carga el modelo una sola vez por proceso. Usa la copia en caché local si existe
+    (sin tocar la red); solo la primera vez lo descarga del Hugging Face Hub."""
+    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+    os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(EMBEDDING_MODEL)
+    try:
+        return SentenceTransformer(EMBEDDING_MODEL, local_files_only=True)
+    except OSError:
+        return SentenceTransformer(EMBEDDING_MODEL)
 
 
 def get_embedding(text):
