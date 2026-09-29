@@ -152,25 +152,32 @@ URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/ad
 
 ### Capturas
 
-1. **Descripción enriquecida con Claude** (`/admin/movie/movie/` → *Carmencita*)
+1. **`update_descriptions.py`** (`python manage.py update_descriptions`)
 
-   ![Admin con la sinopsis enriquecida](capturas_taller3/1_admin_descripcion.png)
+   ![Terminal de update_descriptions](<capturas/Taller 3/1a_update_descriptions_terminal.png>)
+   ![Admin con la sinopsis enriquecida](<capturas/Taller 3/1b_admin_synopsis.png>)
 
-2. **Pósters generados con Higgsfield** (`/movies/`)
+2. **`update_movies_from_csv`** (`python manage.py update_movies_from_csv`)
 
-   ![Listado con pósters IA](capturas_taller3/2_peliculas_imagenes.png)
+   ![Terminal de update_movies_from_csv](<capturas/Taller 3/2_update_movies_from_csv.png>)
 
-3. **Similitud entre películas y un prompt** (`python manage.py movie_similarities`)
+3. **`update_images.py`, primera película** (`python manage.py update_images`)
 
-   ![Consola de movie_similarities](capturas_taller3/3_movie_similarities.png)
+   ![Terminal de update_images](<capturas/Taller 3/3a_update_images_terminal.png>)
+   ![Admin con el póster actualizado](<capturas/Taller 3/3b_admin_poster.png>)
 
-4. **Embedding de una película al azar** (`python manage.py show_random_embedding`)
+4. **`update_images_from_folder`** (`python manage.py update_images_from_folder`)
 
-   ![Consola con un embedding](capturas_taller3/4_embedding_consola.png)
+   ![Terminal de update_images_from_folder](<capturas/Taller 3/4_update_images_from_folder.png>)
 
-5. **Sistema de recomendación** (`/recommend/`)
+5. **`movie_embeddings` + `movie_similarities`**
 
-   ![Recomendación en /recommend/](capturas_taller3/5_recommend.png)
+   ![Terminal de movie_embeddings](<capturas/Taller 3/5a_movie_embeddings.png>)
+   ![Terminal de movie_similarities](<capturas/Taller 3/5b_movie_similarities.png>)
+
+6. **`show_random_embedding`** (`python manage.py show_random_embedding`)
+
+   ![Terminal de show_random_embedding](<capturas/Taller 3/6_show_random_embedding.png>)
 
 ### Entregable en PDF
 
