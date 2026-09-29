@@ -15,14 +15,14 @@
         <div class="modal">
             <button type="button" class="modal-close" id="review-modal-close" aria-label="Cerrar">&times;</button>
             {% if user.is_authenticated %}
-            <h2>Escribe tu review</h2>
+            <h2>Escribe tu reseña</h2>
             <form class="modal-form" method="post" action="{% url 'add_review' movie.pk %}">
                 {% csrf_token %}
                 <label for="id_rating">Calificación (1-10)</label>
                 <input type="number" id="id_rating" name="rating" min="1" max="10" required>
                 <label for="id_comment">Comentario</label>
                 <textarea id="id_comment" name="comment" rows="4" required></textarea>
-                <button type="submit" class="btn btn-primary">Publicar review</button>
+                <button type="submit" class="btn btn-primary">Publicar reseña</button>
             </form>
             {% else %}
             <h2>Inicia sesión para reseñar</h2>
@@ -40,9 +40,9 @@
 
     <form id="reaction-form">{% csrf_token %}</form>
     <div class="reaction-buttons">
-        <button type="button" class="reaction-btn {% if user_reaction == 'like' %}active{% endif %}" data-reaction="like" data-url="{% url 'react_to_movie' movie.pk %}">&#128077; Like</button>
-        <button type="button" class="reaction-btn {% if user_reaction == 'love' %}active{% endif %}" data-reaction="love" data-url="{% url 'react_to_movie' movie.pk %}">&#10084; Love</button>
-        <button type="button" class="reaction-btn {% if user_reaction == 'dislike' %}active{% endif %}" data-reaction="dislike" data-url="{% url 'react_to_movie' movie.pk %}">&#128078; Dislike</button>
+        <button type="button" class="reaction-btn {% if user_reaction == 'like' %}active{% endif %}" data-reaction="like" data-url="{% url 'react_to_movie' movie.pk %}">&#128077; Me gusta</button>
+        <button type="button" class="reaction-btn {% if user_reaction == 'love' %}active{% endif %}" data-reaction="love" data-url="{% url 'react_to_movie' movie.pk %}">&#10084; Me encanta</button>
+        <button type="button" class="reaction-btn {% if user_reaction == 'dislike' %}active{% endif %}" data-reaction="dislike" data-url="{% url 'react_to_movie' movie.pk %}">&#128078; No me gusta</button>
     </div>
 
     <div class="stats-panel">
@@ -53,7 +53,7 @@
         <p class="reviews-count">{{ reviews_count }} reseñas escritas</p>
     </div>
 
-    <h2>Reviews</h2>
+    <h2>Reseñas</h2>
     <div class="review-feed">
         {% for review in reviews %}
         <div class="review-bubble">
@@ -68,7 +68,7 @@
             </div>
         </div>
         {% empty %}
-        <p class="empty-state">No hay reviews todavía.</p>
+        <p class="empty-state">No hay reseñas todavía.</p>
         {% endfor %}
     </div>
 </section>
