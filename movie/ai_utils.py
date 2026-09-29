@@ -14,9 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Haiku: el modelo más económico de Claude; suficiente para enriquecer una sinopsis corta.
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5")
 MAX_OUTPUT_TOKENS = 150
-# Variante multilingüe de MiniLM (384 dims): las sinopsis y los prompts están en español,
-# y all-MiniLM-L6-v2 está entrenado casi solo en inglés.
-EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
+# Modelo local liviano (~470 MB, 384 dims) multilingüe y entrenado para búsqueda
+# consulta -> documento. all-MiniLM-L6-v2 está entrenado casi solo en inglés y el catálogo
+# y los prompts están en español. En una evaluación con 10 prompts de prueba acertó 7/10
+# en top-1 contra 4/10 de paraphrase-multilingual-MiniLM-L12-v2 (ver README).
+EMBEDDING_MODEL = "intfloat/multilingual-e5-small"
+# Los modelos E5 esperan estos prefijos para distinguir consultas de documentos
+QUERY_PREFIX = "query: "
+PASSAGE_PREFIX = "passage: "
 EMB_DTYPE = np.float32
 
 
@@ -90,15 +95,25 @@ def get_embedding_model():
         return SentenceTransformer(EMBEDDING_MODEL)
 
 
-def get_embedding(text):
-    """Embedding normalizado (float32) de un texto con el modelo local."""
-    vector = get_embedding_model().encode(text, normalize_embeddings=True)
+def movie_document(movie):
+    """Texto de la película que se embebe: título, género y sinopsis."""
+    return f"{movie.title}. {movie.genre}. {movie.synopsis}"
+
+
+def get_embedding(text, kind="query"):
+    """Embedding normalizado (float32) de un texto con el modelo local.
+
+    kind="query" para prompts del usuario, kind="passage" para documentos del catálogo.
+    """
+    prefix = QUERY_PREFIX if kind == "query" else PASSAGE_PREFIX
+    vector = get_embedding_model().encode(prefix + text, normalize_embeddings=True)
     return np.asarray(vector, dtype=EMB_DTYPE)
 
 
-def get_embeddings(texts, batch_size=32):
+def get_embeddings(texts, kind="passage", batch_size=32):
+    prefix = QUERY_PREFIX if kind == "query" else PASSAGE_PREFIX
     vectors = get_embedding_model().encode(
-        list(texts), batch_size=batch_size, normalize_embeddings=True
+        [prefix + t for t in texts], batch_size=batch_size, normalize_embeddings=True
     )
     return np.asarray(vectors, dtype=EMB_DTYPE)
 
@@ -120,20 +135,27 @@ def cosine_similarity(a, b):
     return float(np.clip(np.dot(a, b) / denom, -1.0, 1.0))
 
 
-def recommend_movie(prompt, queryset=None):
-    """Retorna (película, similitud) con mayor similitud coseno al prompt, o (None, None)."""
+def rank_movies(prompt, queryset=None):
+    """Lista [(película, similitud)] ordenada de mayor a menor similitud coseno con el prompt.
+
+    Todo es local: embedding del prompt con sentence-transformers y comparación contra
+    los embeddings ya guardados en `emb`. No llama a ninguna API externa.
+    """
     from .models import Movie
 
     if queryset is None:
         queryset = Movie.objects.exclude(emb=None)
+    movies = list(queryset)
+    if not movies:
+        return []
 
     prompt_emb = get_embedding(prompt)
-    best_movie, best_similarity = None, -np.inf
-    for movie in queryset:
-        similarity = cosine_similarity(prompt_emb, bytes_to_embedding(movie.emb))
-        if similarity > best_similarity:
-            best_movie, best_similarity = movie, similarity
+    scored = [(m, cosine_similarity(prompt_emb, bytes_to_embedding(m.emb))) for m in movies]
+    scored.sort(key=lambda pair: pair[1], reverse=True)
+    return scored
 
-    if best_movie is None:
-        return None, None
-    return best_movie, best_similarity
+
+def recommend_movie(prompt, queryset=None):
+    """Retorna (película, similitud) con mayor similitud coseno al prompt, o (None, None)."""
+    ranking = rank_movies(prompt, queryset)
+    return ranking[0] if ranking else (None, None)

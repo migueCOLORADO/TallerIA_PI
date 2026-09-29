@@ -1,0 +1,96 @@
+{% extends "movie/base.html" %}
+{% block title %}Recommend{% endblock %}
+{% block content %}
+<div class="container py-4 recommend-page">
+    <h1 class="mb-2" style="color: var(--text-light);">Recomiéndame una película</h1>
+    <p class="recommend-intro">Describe lo que quieres ver y buscamos en el catálogo la película
+    cuya sinopsis se parece más a tu idea (similitud coseno entre embeddings).</p>
+
+    <div class="card recommend-form-card mb-4">
+        <div class="card-body">
+            <form method="post" action="{% url 'recommend' %}" class="recommend-form">
+                {% csrf_token %}
+                <label for="id_prompt">¿Qué te gustaría ver?</label>
+                <div class="row g-2">
+                    <div class="col-12 col-md">
+                        <input type="text" id="id_prompt" name="prompt" value="{{ prompt }}"
+                               placeholder="Ej: película de ciencia ficción con viajes en el tiempo"
+                               maxlength="300" autocomplete="off" required>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <button type="submit" class="btn btn-primary w-100">Recomendar</button>
+                    </div>
+                </div>
+            </form>
+            <div class="recommend-examples">
+                <span>Prueba con:</span>
+                {% for example in examples %}
+                <button type="button" class="recommend-chip" data-prompt="{{ example }}">{{ example }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <p class="recommend-error">{{ error }}</p>
+    {% endif %}
+
+    {% if movie %}
+    <h2 class="mb-3" style="color: var(--text-light);">Tu recomendación</h2>
+    <div class="card recommend-result mb-4">
+        <div class="row g-0">
+            <div class="col-12 col-md-4 col-lg-3">
+                <img src="{{ movie.poster|default:'https://placehold.co/300x450?text=Sin+poster' }}"
+                     class="recommend-poster" alt="{{ movie.title }}">
+            </div>
+            <div class="col-12 col-md-8 col-lg-9">
+                <div class="card-body">
+                    <h3 class="card-title">{{ movie.title }}</h3>
+                    <p class="card-text"><small class="text-muted">{{ movie.genre }} &middot; {{ movie.release_year }} &middot; {{ movie.director }} &middot; {{ movie.duration }} min</small></p>
+                    <p class="card-text">{{ movie.synopsis }}</p>
+                    <div class="recommend-score">
+                        <span class="badge">Similitud {{ similarity|floatformat:4 }}</span>
+                        <div class="stats-bar recommend-score-bar">
+                            <div class="stats-bar-fill" style="width: {{ similarity_pct }}%;"></div>
+                        </div>
+                    </div>
+                    <p class="card-text"><small class="text-muted">Prompt: “{{ prompt }}”</small></p>
+                    <a href="{% url 'movie_detail' movie.pk %}" class="btn btn-primary btn-sm">Ver detalle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if alternatives %}
+    <h2 class="mb-3" style="color: var(--text-light);">También podrían gustarte</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        {% for alt, alt_similarity in alternatives %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ alt.poster|default:'https://placehold.co/300x450?text=Sin+poster' }}" class="card-img-top" alt="{{ alt.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ alt.title }}</h5>
+                    <p class="card-text">{{ alt.synopsis|truncatewords:20 }}</p>
+                    <p class="card-text"><small class="text-muted">{{ alt.genre }} &middot; {{ alt.release_year }} &middot; similitud {{ alt_similarity|floatformat:4 }}</small></p>
+                    <a href="{% url 'movie_detail' alt.pk %}" class="btn btn-primary btn-sm">Ver detalle</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.recommend-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            const input = document.getElementById('id_prompt');
+            input.value = chip.dataset.prompt;
+            input.form.submit();
+        });
+    });
+</script>
+{% endblock %}

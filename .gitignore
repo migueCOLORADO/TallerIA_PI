@@ -25,3 +25,6 @@ openAI.env
 open_ai_api_keys.env
 
 Claude.md
+
+# Config local de Claude Code
+.claude/

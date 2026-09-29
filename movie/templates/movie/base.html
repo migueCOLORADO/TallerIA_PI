@@ -25,6 +25,7 @@
                 <a href="{% url 'about' %}">About</a>
                 <a href="{% url 'news' %}">News</a>
                 <a href="{% url 'statistics' %}">Statistics</a>
+                <a href="{% url 'recommend' %}">Recommend</a>
                 <a href="{% url 'signup' %}">Sign Up</a>
                 {% if user.is_authenticated %}
                 <span class="nav-user">Hola, {{ user.username }}</span>

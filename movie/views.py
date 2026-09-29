@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from .ai_utils import rank_movies
 from .models import Movie, Reaction, Review
 
 
@@ -192,3 +193,39 @@ def search(request):
         "query": q,
         "results": results,
     })
+
+
+RECOMMEND_EXAMPLES = [
+    "película de ciencia ficción con viajes en el tiempo",
+    "una comedia ligera para ver con amigos",
+    "historia de mafia y traición familiar",
+    "animación emotiva sobre la familia",
+]
+
+
+def recommend(request):
+    context = {"examples": RECOMMEND_EXAMPLES, "prompt": ""}
+
+    if request.method == "POST":
+        prompt = request.POST.get("prompt", "").strip()
+        context["prompt"] = prompt
+
+        if not prompt:
+            context["error"] = "Escribe qué tipo de película quieres ver."
+        else:
+            ranking = rank_movies(prompt, Movie.objects.exclude(emb=None))
+            if not ranking:
+                context["error"] = (
+                    "Todavía no hay películas con embeddings para comparar. "
+                    "Ejecuta: python manage.py movie_embeddings"
+                )
+            else:
+                movie, similarity = ranking[0]
+                context.update({
+                    "movie": movie,
+                    "similarity": similarity,
+                    "similarity_pct": round(max(similarity, 0) * 100),
+                    "alternatives": ranking[1:4],
+                })
+
+    return render(request, "movie/recommend.html", context)

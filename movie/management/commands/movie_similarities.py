@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from movie.ai_utils import EMBEDDING_MODEL, cosine_similarity, get_embedding
+from movie.ai_utils import EMBEDDING_MODEL, cosine_similarity, get_embedding, movie_document
 from movie.models import Movie
 
 
@@ -23,9 +23,9 @@ class Command(BaseCommand):
         self.stdout.write(f"Película 2: {movie2.title} ({movie2.genre})")
         self.stdout.write(f"Prompt: \"{prompt}\"\n")
 
-        # Embeddings de las sinopsis de ambas películas
-        emb1 = get_embedding(movie1.synopsis)
-        emb2 = get_embedding(movie2.synopsis)
+        # Embeddings de ambas películas (mismo texto que se guarda en `emb`)
+        emb1 = get_embedding(movie_document(movie1), kind="passage")
+        emb2 = get_embedding(movie_document(movie2), kind="passage")
 
         # Similitud entre películas
         similarity = cosine_similarity(emb1, emb2)
