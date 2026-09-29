@@ -39,6 +39,33 @@ Taller 3 del curso ST0251, rama `miguel-colorado` del fork de [TallerIA_PI](http
 | 7. Recomendación | Vista `/recommend/`: el usuario describe qué quiere ver; se muestra la película más similar + 3 alternativas. |
 | Pruebas | 13 pruebas unitarias nuevas (25 en total) y simulación Monte Carlo de 200 corridas. |
 
+<details>
+<summary><b>Taller 1</b></summary>
+
+![Home](capturas/Taller%201/home.png)
+![About](capturas/Taller%201/about.png)
+![Listado de películas](capturas/Taller%201/listadoPeliculas.png)
+![Películas con patrón](capturas/Taller%201/peliculasPatron.png)
+
+</details>
+
+<details>
+<summary><b>Taller 2</b></summary>
+
+Guía: [GUIA_EJECUCION_Y_PRUEBAS.md](GUIA_EJECUCION_Y_PRUEBAS.md) · Rama original: https://github.com/migueCOLORADO/PupiGo/tree/Miguel-Colorado-Talleres
+
+1. **≥10 películas en Cards de Bootstrap + navbar con imagen**
+   ![Cards](capturas/Taller%202/punto1.png)
+   ![Cards (cont.)](capturas/Taller%202/punto1.1.png)
+   ![Cards (cont.)](capturas/Taller%202/punto1.2.png)
+   ![Cards (cont.)](capturas/Taller%202/punto1.3.png)
+2. **Listado responsive** ![Responsive](capturas/Taller%202/punto2.png)
+3. **News en Horizontal Cards** ![News](capturas/Taller%202/punto3.png)
+4. **Gráfica por año** ![Por año](capturas/Taller%202/punto4.png)
+5. **Gráfica por género** ![Por género](capturas/Taller%202/punto5.png)
+
+</details>
+
 ## Decisiones técnicas
 
 El enunciado usa OpenAI (y opcionalmente el Hub de Hugging Face). **Por decisión del estudiante** se reemplazaron los proveedores manteniendo el mismo patrón de cada punto (comando con `break` para 1 película + proceso masivo aparte).
