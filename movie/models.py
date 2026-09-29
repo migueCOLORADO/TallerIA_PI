@@ -16,6 +16,7 @@ class Movie(models.Model):
     director = models.CharField(max_length=200)
     duration = models.IntegerField(help_text="Duración en minutos")
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, default="movie")
+    emb = models.BinaryField(null=True, blank=True)
 
     @property
     def average_rating(self):
