@@ -19,6 +19,16 @@ def parse_duration(value):
     return int(match.group()) if match else 0
 
 
+INVALID_POSTER_VALUES = {'', 'n/a', 'na', 'none', 'null', '-'}
+
+
+def clean_poster(value):
+    value = (value or '').strip()
+    if value.lower() in INVALID_POSTER_VALUES or not value.lower().startswith(('http://', 'https://')):
+        return ''
+    return value
+
+
 class Command(BaseCommand):
     help = 'Carga hasta 100 películas de movies_initial.csv al modelo Movie.'
 
@@ -44,7 +54,7 @@ class Command(BaseCommand):
                             'genre': row.get('genre') or '',
                             'release_year': parse_year(row.get('year')),
                             'synopsis': row.get('plot') or '',
-                            'poster': row.get('poster') or DEFAULT_POSTER.format(title.replace(' ', '+')),
+                            'poster': clean_poster(row.get('poster')) or DEFAULT_POSTER.format(title.replace(' ', '+')),
                             'director': (row.get('director') or '')[:200],
                             'duration': parse_duration(row.get('runtime')),
                             'content_type': 'movie',

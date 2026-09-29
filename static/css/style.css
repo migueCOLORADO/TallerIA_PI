@@ -519,8 +519,22 @@ main {
 
 .movie-poster {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
+    object-position: center top;
+    display: block;
+    background-color: #1e3a34;
+}
+
+/* Cards de póster con markup Bootstrap (.card-img-top) usadas fuera de _movie_card.html
+   (catálogo en home.html, "también podrían gustarte" en recommend.html, etc.):
+   mismo aspect-ratio/object-fit que .movie-poster para que todas las cards midan igual
+   sin importar la resolución original de cada imagen generada. */
+.card-img-top {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    object-position: center top;
     display: block;
     background-color: #1e3a34;
 }
@@ -634,23 +648,42 @@ a, button {
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 300;
+    z-index: 1000;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.open {
     display: flex;
 }
 
+/* Bootstrap también define .modal (display:none, position:fixed, 100% x 100%):
+   se sobrescriben explícitamente para que el modal propio sea visible al abrirse. */
 .modal {
+    display: block;
     position: relative;
+    top: auto;
+    left: auto;
+    height: auto;
+    overflow-x: hidden;
     background-color: var(--bg-card);
     border-radius: 10px;
     padding: 2rem;
     width: 90%;
     max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    margin: auto;
+}
+
+@media (max-width: 480px) {
+    .modal {
+        padding: 1.5rem;
+    }
 }
 
 .modal-close {
