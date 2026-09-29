@@ -1,0 +1,23 @@
+{% extends "movie/base.html" %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="auth-card">
+        <h1>Iniciar sesión</h1>
+        <p>Inicia sesión para poder reseñar películas y series.</p>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% if form.errors %}
+            <p class="auth-error">Usuario o contraseña incorrectos.</p>
+            {% endif %}
+            <label for="id_username">Usuario</label>
+            {{ form.username }}
+            <label for="id_password">Contraseña</label>
+            {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            {% if next %}<a class="btn btn-secondary" href="{{ next }}">Cancelar</a>{% endif %}
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,70 +1,55 @@
-# 🎬 Workshop 3 - Integración de Inteligencia Artificial en el Proyecto de Películas
+# Ureview — Taller 2 (Django + Bootstrap)
 
-En este workshop integraremos herramientas de **Inteligencia Artificial** al proyecto de películas. 
+## Cómo correr el proyecto localmente (Windows / PowerShell)
 
-### 📌 Objetivos
-- Utilizar modelos de lenguaje (GPT vía API de OpenAI) para **crear nuevas películas** en la base de datos.
-- Generar **imágenes representativas** de cada película usando una API de creación de imágenes.
-- Desarrollar un **sistema de recomendación** basado en embeddings.
+Ejecutar desde la carpeta `Talleres-MiguelColorado`.
 
----
-> ⚠️ **Recomendación Importante**
->
-> Antes de realizar cada actividad, lee el documento completo de la etapa correspondiente.  
-> Esto te permitirá comprender mejor las instrucciones y evitar errores durante el desarrollo.  
-> **Ejemplo:** Lee el documento `1_Fork_and_clone.md` completo antes de realizar las actividades del punto 1.  
-> Haz lo mismo con cada etapa del taller.
----
----
->⚠️ Recomendación Importante
->
->Asegúrate de incluir el archivo openAI.env en el archivo .gitignore de tu proyecto.
->Esto evitará que por error subas tu llave privada de OpenAI a GitHub y la expongas públicamente.
->Ejemplo: Agrega la línea openAI.env dentro de tu .gitignore antes de hacer git add.
->Verifica siempre que los archivos sensibles no estén en el área de staging.
+```powershell
+# 1. Activar el entorno virtual
+venv\Scripts\Activate.ps1
 
----
+# 2. Instalar dependencias
+pip install -r requirements.txt
 
+# 3. Migraciones
+python manage.py migrate
 
-## 📝 Instrucciones por etapas
-1. [Hacer Fork del proyecto base](1_Fork_and_clone.md)
-2. [Crear la API key en OpenAI](2a_openAIapikey.md) (No es necesario, las API keys serán entregadas por el docente)
-3. [Instalar las librerías necesarias](3_Instalaciones.md)
-4. [Generar o actualizar las descripciones de las películas](4_movie_descriptions.md)
-5. [Crear ilustraciones de las películas](5_movie_pictures.md)
-6. [Crear embeddings de las descripciones de las películas](6_movie_similarities.md)
-7. [Implementar el sistema de recomendación](7_movie_recommendations.md)
+# 4. Cargar datos (orden: movies, luego news)
+python manage.py add_movies_db
+python manage.py seed_movies
+python manage.py add_news_db
 
----
+# 5. Crear superusuario (para /admin/)
+python manage.py createsuperuser
 
-## ✅ Entregable en Clase
-Entregar un archivo **PDF** que contenga:
+# 6. Levantar el servidor
+python manage.py runserver
+```
 
-1. ✅ Link del repositorio del proyecto en GitHub.
-2. ✅ Captura de pantalla de la **modificación de la descripción de la primera película** usando [update_descriptions.py](update_descriptions.py).
-3. ✅ Captura de pantalla de la **actualización de las descripciones** con el comando `update_movies_from_csv`.
-4. ✅ Captura de pantalla de la **modificación de la imagen de la primera película** con [update_images.py](update_images.py).
-5. ✅ Captura de pantalla de la **modificación de todas las imágenes de las películas** usando `update_images_from_folder`.
-6. ✅ Captura de pantalla de la ejecución de la **generación de embeddings** y comparación con **similitud de coseno** usando [movie_similarities.py](movie_similarities.py).
-7. ✅ Captura de pantalla del embedding generado para una película al azar.
+Si PowerShell bloquea `Activate.ps1`: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 
----
+URLs clave: `/` (home), `/movies/`, `/series/`, `/news/`, `/statistics/`, `/signup/`, `/admin/`.
 
-## 🚀 Entregable Final - Semana del **14 de septiembre de 2026**
-**Objetivo:** Convertir el sistema de recomendación en una **nueva app** dentro del proyecto.
+Guía completa de ejecución y pruebas (incluye tests unitarios): [GUIA_EJECUCION_Y_PRUEBAS.md](GUIA_EJECUCION_Y_PRUEBAS.md).
 
-### 📲 Requisitos de la App
-- Incluir un nuevo ítem en la **barra de navegación** (similar a *News*).
-- La app debe tener un campo para ingresar el **prompt** de la recomendación (Ejemplo: _Película de la segunda guerra mundial_).
-- Mostrar como resultado:
-  - ✅ La película recomendada
-  - ✅ La imagen
-  - ✅ La descripción
-- La vista debe ser similar a la búsqueda de película en la app **Movies**.
+## Entregable Taller 2
 
-### 📄 Entrega
-Entregar un archivo **PDF** con:
-1. ✅ Link al repositorio de GitHub actualizado
-2. ✅ Captura de pantalla de la app funcionando con un ejemplo de búsqueda y su resultado
+1. **Repositorio / rama**: https://github.com/migueCOLORADO/PupiGo/tree/Miguel-Colorado-Talleres
 
----
+2. **≥10 películas en Cards de Bootstrap (genre y year visibles) + navbar con imagen**
+   ![Catálogo con Cards Bootstrap](capturas/Taller%202/punto1.png)
+   ![Catálogo con Cards Bootstrap (cont.)](capturas/Taller%202/punto1.1.png)
+   ![Catálogo con Cards Bootstrap (cont.)](capturas/Taller%202/punto1.2.png)
+   ![Catálogo con Cards Bootstrap (cont.)](capturas/Taller%202/punto1.3.png)
+
+3. **Mismo listado en ventana angosta (responsive)**
+   ![Catálogo responsive](capturas/Taller%202/punto2.png)
+
+4. **News en Horizontal Cards**
+   ![News horizontal cards](capturas/Taller%202/punto3.png)
+
+5. **Gráfica de películas por año**
+   ![Gráfica por año](capturas/Taller%202/punto4.png)
+
+6. **Gráfica de películas por género**
+   ![Gráfica por género](capturas/Taller%202/punto5.png)

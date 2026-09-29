@@ -1,0 +1,14 @@
+{% extends "movie/base.html" %}
+{% block title %}Buscar{% endblock %}
+{% block content %}
+<section class="section">
+    <h1>Resultados para: {{ query }}</h1>
+    <div class="results-grid">
+        {% for movie in results %}
+        {% include "movie/_movie_card.html" %}
+        {% empty %}
+        <p class="empty-state">No se encontraron resultados.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

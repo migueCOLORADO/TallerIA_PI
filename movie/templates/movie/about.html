@@ -1,0 +1,28 @@
+{% extends "movie/base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<section class="section detail-section about-section">
+    <h1>Sobre Ureview</h1>
+
+    <div class="about-block">
+        <h2>¿Qué es Ureview?</h2>
+        <p>Ureview es un catálogo de películas y series donde puedes explorar títulos
+        por género, dejar reseñas con calificación, y reaccionar rápidamente a lo que
+        ves (like, love o dislike), además de ver estadísticas de qué tan bien recibido
+        está cada título.</p>
+    </div>
+
+    <div class="about-block">
+        <h2>El proyecto</h2>
+        <p>Ureview es un proyecto académico desarrollado para el curso ST0251, como
+        parte de un taller sobre control de versiones con Git/GitHub y desarrollo web
+        con Django. Autor: Miguel Colorado.</p>
+    </div>
+
+    <div class="about-block">
+        <h2>Stack técnico</h2>
+        <p>Construido con Django y SQLite en el backend, y HTML, CSS y JavaScript
+        plano en el frontend, sin frameworks de JS adicionales.</p>
+    </div>
+</section>
+{% endblock %}

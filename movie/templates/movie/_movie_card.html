@@ -1,0 +1,28 @@
+<div class="movie-card">
+    <a class="movie-card-inner" href="{% url 'movie_detail' movie.pk %}">
+        <img class="movie-poster" src="{{ movie.poster|default:'https://placehold.co/300x450?text=Sin+poster' }}" alt="{{ movie.title }}">
+        <div class="movie-card-body">
+            <h3>{{ movie.title }}</h3>
+            <p class="movie-year">{{ movie.release_year }}{% if movie.genre %} &middot; {{ movie.genre }}{% endif %}</p>
+            <span class="badge">{{ movie.average_rating|floatformat:1 }}</span>
+        </div>
+    </a>
+    <div class="card-hover-overlay">
+        <a class="card-hover-link" href="{% url 'movie_detail' movie.pk %}">
+            <img class="movie-poster" src="{{ movie.poster|default:'https://placehold.co/300x450?text=Sin+poster' }}" alt="{{ movie.title }}">
+            <div class="movie-card-body">
+                <h3>{{ movie.title }}</h3>
+                <p class="movie-year">{{ movie.release_year }}{% if movie.genre %} &middot; {{ movie.genre }}{% endif %}</p>
+                <span class="badge">{{ movie.average_rating|floatformat:1 }}</span>
+            </div>
+            <div class="card-expand">
+                <p class="card-expand-meta">{{ movie.release_year }} &middot; {{ movie.genre }} &middot; {{ movie.duration }} min</p>
+                <div class="card-expand-actions">
+                    <span class="expand-icon" title="Ver detalle">&#9654;</span>
+                    <button type="button" class="expand-icon" title="Agregar" onclick="event.preventDefault(); event.stopPropagation();">+</button>
+                    <button type="button" class="expand-icon" title="Me gusta" onclick="event.preventDefault(); event.stopPropagation();">&#9825;</button>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>

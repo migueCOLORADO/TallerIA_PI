@@ -1,0 +1,119 @@
+{% extends "movie/base.html" %}
+{% block title %}{{ movie.title }}{% endblock %}
+{% block content %}
+<section class="section detail-section">
+    <h1>{{ movie.title }} ({{ movie.release_year }})</h1>
+    <p>{{ movie.synopsis }}</p>
+    <p>Director: {{ movie.director }}</p>
+    <p>Duración: {{ movie.duration }} min</p>
+    <p>Género: {{ movie.genre }}</p>
+    <p>Rating promedio: {{ movie.average_rating|floatformat:1 }}</p>
+
+    <button type="button" class="btn btn-primary" id="review-open-btn">Reseñar</button>
+
+    <div class="modal-overlay" id="review-modal-overlay">
+        <div class="modal">
+            <button type="button" class="modal-close" id="review-modal-close" aria-label="Cerrar">&times;</button>
+            {% if user.is_authenticated %}
+            <h2>Escribe tu review</h2>
+            <form class="modal-form" method="post" action="{% url 'add_review' movie.pk %}">
+                {% csrf_token %}
+                <label for="id_rating">Calificación (1-10)</label>
+                <input type="number" id="id_rating" name="rating" min="1" max="10" required>
+                <label for="id_comment">Comentario</label>
+                <textarea id="id_comment" name="comment" rows="4" required></textarea>
+                <button type="submit" class="btn btn-primary">Publicar review</button>
+            </form>
+            {% else %}
+            <h2>Inicia sesión para reseñar</h2>
+            <form class="modal-form" method="post" action="{% url 'login' %}?next={{ request.path }}">
+                {% csrf_token %}
+                <label for="modal-username">Usuario</label>
+                <input type="text" id="modal-username" name="username" required>
+                <label for="modal-password">Contraseña</label>
+                <input type="password" id="modal-password" name="password" required>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <form id="reaction-form">{% csrf_token %}</form>
+    <div class="reaction-buttons">
+        <button type="button" class="reaction-btn {% if user_reaction == 'like' %}active{% endif %}" data-reaction="like" data-url="{% url 'react_to_movie' movie.pk %}">&#128077; Like</button>
+        <button type="button" class="reaction-btn {% if user_reaction == 'love' %}active{% endif %}" data-reaction="love" data-url="{% url 'react_to_movie' movie.pk %}">&#10084; Love</button>
+        <button type="button" class="reaction-btn {% if user_reaction == 'dislike' %}active{% endif %}" data-reaction="dislike" data-url="{% url 'react_to_movie' movie.pk %}">&#128078; Dislike</button>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stats-bar">
+            <div id="stats-fill" class="stats-bar-fill stats-{{ stats.level }}" style="width: {{ stats.positive_pct }}%;"></div>
+        </div>
+        <p id="stats-text" class="stats-text">{{ stats.positive_pct }}% positivas ({{ stats.total }})</p>
+        <p class="reviews-count">{{ reviews_count }} reseñas escritas</p>
+    </div>
+
+    <h2>Reviews</h2>
+    <div class="review-feed">
+        {% for review in reviews %}
+        <div class="review-bubble">
+            <div class="review-avatar">{{ review.reviewer_name|slice:":2"|upper }}</div>
+            <div class="review-body">
+                <div class="review-header">
+                    <span class="review-name">{{ review.reviewer_name }}</span>
+                    <span class="badge">{{ review.rating }}/10</span>
+                </div>
+                <p class="review-comment">{{ review.comment }}</p>
+                <p class="review-date">{{ review.created_at|date:"d M Y, H:i" }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-state">No hay reviews todavía.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const openBtn = document.getElementById('review-open-btn');
+        const closeBtn = document.getElementById('review-modal-close');
+        const overlay = document.getElementById('review-modal-overlay');
+        openBtn.addEventListener('click', () => overlay.classList.add('open'));
+        closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('open');
+        });
+    })();
+
+    (function () {
+        const csrfToken = document.querySelector('#reaction-form [name=csrfmiddlewaretoken]').value;
+        const fill = document.getElementById('stats-fill');
+        const text = document.getElementById('stats-text');
+        const buttons = document.querySelectorAll('.reaction-btn');
+
+        buttons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                fetch(btn.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `reaction_type=${btn.dataset.reaction}`,
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.error) return;
+                        fill.style.width = data.positive_pct + '%';
+                        fill.classList.remove('stats-positive', 'stats-neutral', 'stats-negative');
+                        fill.classList.add('stats-' + data.level);
+                        text.textContent = `${data.positive_pct}% positivas (${data.total})`;
+                        buttons.forEach((b) => b.classList.toggle('active', b.dataset.reaction === data.user_reaction));
+                    });
+            });
+        });
+    })();
+</script>
+{% endblock %}

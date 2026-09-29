@@ -1,0 +1,105 @@
+{% extends "movie/base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="hero" id="hero">
+    {% for movie in hero_movies %}
+    <div class="hero-slide {% if forloop.first %}active{% endif %}"
+         style="background-image: url('{{ movie.poster|default:'https://placehold.co/1600x900?text=Sin+poster' }}')"></div>
+    {% endfor %}
+    <div class="hero-overlay"></div>
+
+    {% for movie in hero_movies %}
+    <div class="hero-content {% if forloop.first %}active{% endif %}">
+        <p class="eyebrow">Destacada</p>
+        <h1>{{ movie.title }}</h1>
+        <p class="hero-synopsis">{{ movie.synopsis|truncatewords:25 }}</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{% url 'movie_detail' movie.pk %}">Reseñar</a>
+            <a class="btn btn-secondary" href="{% url 'movie_detail' movie.pk %}">Más información</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="hero-content active">
+        <h1>Ureview</h1>
+        <p>Taller de {{ student_name }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="container py-4">
+    <h2 class="mb-4" style="color: var(--text-light);">Catálogo completo</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for movie in movies %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ movie.poster|default:'https://placehold.co/300x450?text=Sin+poster' }}" class="card-img-top" alt="{{ movie.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">{{ movie.synopsis|truncatewords:20 }}</p>
+                    <p class="card-text"><small class="text-muted">{{ movie.genre }} &middot; {{ movie.release_year }}</small></p>
+                    {% if movie.pk %}
+                    <a href="{% url 'movie_detail' movie.pk %}" class="btn btn-primary btn-sm">Ver detalle</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="rows-container">
+    <section class="carousel-row">
+        <h2 class="carousel-title">Destacadas</h2>
+        <div class="carousel-track">
+            {% for movie in featured_movies %}
+            {% include "movie/_movie_card.html" %}
+            {% empty %}
+            <p class="empty-state">No hay películas todavía.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% for genre, titles in genre_rows %}
+    <section class="carousel-row">
+        <h2 class="carousel-title">{{ genre }}</h2>
+        <div class="carousel-track">
+            {% for movie in titles %}
+            {% include "movie/_movie_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+</div>
+
+<div class="container py-4">
+    <h3 style="color: var(--text-light);">Join our mailing list</h3>
+    <form action="{% url 'signup' %}" method="get" class="row g-2 align-items-end" style="max-width: 420px;">
+        <div class="col mb-3">
+            <label for="mailingEmail" class="form-label" style="color: var(--text-muted);">Email</label>
+            <input type="email" class="form-control" id="mailingEmail" name="email" required>
+        </div>
+        <div class="col-auto mb-3">
+            <button type="submit" class="btn btn-primary">Join</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if hero_movies|length > 1 %}
+<script>
+    (function () {
+        const slides = document.querySelectorAll('.hero-slide');
+        const contents = document.querySelectorAll('.hero-content');
+        let current = 0;
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            contents[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+            contents[current].classList.add('active');
+        }, 6500);
+    })();
+</script>
+{% endif %}
+{% endblock %}

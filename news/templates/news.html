@@ -1,0 +1,23 @@
+{% extends "movie/base.html" %}
+{% block title %}News{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4" style="color: var(--text-light);">News</h1>
+    {% for n in newss %}
+    <div class="card mb-3 news-card">
+        <div class="row g-0">
+            <div class="col-md-4 news-card-accent"></div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">{{ n.headline }}</h5>
+                    <p class="card-text">{{ n.body|truncatewords:35 }}</p>
+                    <p class="card-text"><small class="text-muted">{{ n.date }}</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="color: var(--text-muted);">No hay noticias todavía.</p>
+    {% endfor %}
+</div>
+{% endblock %}

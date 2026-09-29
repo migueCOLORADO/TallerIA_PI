@@ -1,0 +1,12 @@
+<div class="subnav">
+    <h1 class="subnav-title">{{ section_title }}</h1>
+    <details class="genre-dropdown">
+        <summary class="genre-toggle">Géneros</summary>
+        <div class="genre-menu">
+            <a href="{{ request.path }}" class="genre-option {% if not selected_genre %}active{% endif %}">Todos</a>
+            {% for g in genres %}
+            <a href="{{ request.path }}?genero={{ g|urlencode }}" class="genre-option {% if selected_genre == g %}active{% endif %}">{{ g }}</a>
+            {% endfor %}
+        </div>
+    </details>
+</div>
