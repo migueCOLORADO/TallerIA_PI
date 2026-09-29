@@ -1,34 +1,34 @@
 # Ureview — Taller 3: Integración de IA | Proyecto Integrador 1 (PI1)
 
-## Table of Contents
-1. [Description](#description)
-   1. [Context](#context)
-   2. [What Was Implemented](#what-was-implemented)
+## Tabla de contenido
+1. [Descripción](#descripción)
+   1. [Contexto](#contexto)
+   2. [Qué se implementó](#qué-se-implementó)
 2. [Decisiones técnicas](#decisiones-técnicas)
    1. [Texto: Claude en vez de OpenAI](#texto-claude-en-vez-de-openai)
    2. [Imágenes: Higgsfield en vez de DALL-E](#imágenes-higgsfield-en-vez-de-dall-e)
    3. [Embeddings: sentence-transformers en vez de OpenAI](#embeddings-sentence-transformers-en-vez-de-openai)
    4. [Sistema de recomendación](#sistema-de-recomendación)
-3. [How to Run](#how-to-run)
-   1. [Requirements](#requirements)
-   2. [Setup (Windows PowerShell)](#setup-windows-powershell)
+3. [Cómo ejecutar](#cómo-ejecutar)
+   1. [Requisitos](#requisitos)
+   2. [Instalación (Windows PowerShell)](#instalación-windows-powershell)
    3. [Capturas](#capturas)
-4. [API / Comandos](#api--comandos)
+4. [Comandos](#comandos)
 5. [Resultados](#resultados)
    1. [Gasto real](#gasto-real)
    2. [Comparación de modelos de embeddings](#comparación-de-modelos-de-embeddings)
    3. [Monte Carlo](#monte-carlo)
    4. [Pruebas unitarias](#pruebas-unitarias)
-6. [Troubleshooting](#troubleshooting)
-7. [Authors](#authors)
+6. [Solución de problemas](#solución-de-problemas)
+7. [Autor](#autor)
 
-## Description
+## Descripción
 
-### Context
+### Contexto
 
 Taller 3 del curso ST0251, rama `miguel-colorado` del fork de [TallerIA_PI](https://github.com/jdmartinev/TallerIA_PI). En lugar del proyecto genérico del curso (`DjangoProjectBase/`, eliminado), el taller corre sobre el proyecto real de los Talleres 1 y 2 (Ureview, rama `Miguel-Colorado-Talleres` del repo [PupiGo](https://github.com/migueCOLORADO/PupiGo/tree/Miguel-Colorado-Talleres)): catálogo de 148 títulos (50 del seed curado + 98 de `movies_initial.csv`), reseñas, reacciones, login y búsqueda en vivo. El enunciado original está en [README_TALLER_ORIGINAL.md](README_TALLER_ORIGINAL.md) y en `1_…md` a `7_…md`; la guía y capturas de los Talleres 1–2 siguen en [GUIA_EJECUCION_Y_PRUEBAS.md](GUIA_EJECUCION_Y_PRUEBAS.md) y [capturas/](capturas/).
 
-### What Was Implemented
+### Qué se implementó
 
 | Punto del taller | Implementación |
 |---|---|
@@ -73,13 +73,13 @@ El enunciado usa OpenAI (y opcionalmente el Hub de Hugging Face). **Por decisió
 ### Texto: Claude en vez de OpenAI
 
 - Modelo `claude-haiku-4-5`, el más económico de Claude, suficiente para reescribir una sinopsis corta.
-- Control de gasto: `max_tokens=150`, máximo 1 reintento por fallo transitorio, piloto de 5 películas antes del batch; si una película falla se registra y se sigue.
-- El batch (`aux_files/generate_descriptions_batch.py`) es reanudable: los títulos ya presentes en el CSV no se vuelven a pedir.
+- Control de gasto: `max_tokens=150`, máximo 1 reintento por fallo transitorio, piloto de 5 películas antes del lote; si una película falla se registra y se sigue.
+- El lote (`aux_files/generate_descriptions_batch.py`) es reanudable: los títulos ya presentes en el CSV no se vuelven a pedir.
 - La key se lee de `.env` en la raíz con `python-dotenv`; `.env` y `*.env` están en `.gitignore`.
 
 ### Imágenes: Higgsfield en vez de DALL-E
 
-Higgsfield se usó a través de su **servidor MCP** (disponible para el agente en Claude Code), no como API REST que un comando `manage.py` pueda llamar por su cuenta. Por eso el pipeline se partió en pasos:
+Higgsfield se usó a través de su **servidor MCP** (disponible para el agente en Claude Code), no como API REST que un comando `manage.py` pueda llamar por su cuenta. Por eso el flujo se partió en pasos:
 
 | Paso | Quién lo ejecuta | Salida |
 |---|---|---|
@@ -109,15 +109,15 @@ Higgsfield se usó a través de su **servidor MCP** (disponible para el agente e
 4. Todo es local: ninguna llamada a APIs externas por request.
 5. `recommend.html` extiende `base.html` (navbar, footer, tema oscuro) y usa el grid de Bootstrap (`row-cols-1 row-cols-sm-2 row-cols-md-3`). Verificado en 1366 px y 375 px: sin scroll horizontal, formulario y resultado apilados en móvil.
 
-## How to Run
+## Cómo ejecutar
 
-### Requirements
+### Requisitos
 
 - Python 3.13
 - `ANTHROPIC_API_KEY` (solo para regenerar descripciones; el CSV ya está generado)
 - ~470 MB libres para el modelo de embeddings (descarga automática la primera vez)
 
-### Setup (Windows PowerShell)
+### Instalación (Windows PowerShell)
 
 ```powershell
 # 1. Clonar la rama
@@ -164,12 +164,12 @@ Van en [capturas_taller3/](capturas_taller3/) (lista completa en [capturas_talle
 | 6 (opcional) | `6_recommend_movil.png` | `/recommend/` en DevTools, 375 px |
 | 7 (opcional) | `7_montecarlo.png` | `python manage.py montecarlo_recommendation_eval` |
 
-## API / Comandos
+## Comandos
 
 | Comando | Qué hace | ¿Gasta API? |
 |---|---|---|
 | `python manage.py update_descriptions` | Enriquece con Claude la sinopsis de la **primera** película (patrón del taller, con `break`) | Sí (1 llamada) |
-| `python aux_files/generate_descriptions_batch.py [--limit N] [--titles "A\|B"]` | Batch de Claude → `updated_movie_descriptions.csv` (`Title,Updated Description`) | Sí |
+| `python aux_files/generate_descriptions_batch.py [--limit N] [--titles "A\|B"]` | Lote de Claude → `updated_movie_descriptions.csv` (`Title,Updated Description`) | Sí |
 | `python manage.py update_movies_from_csv [--csv RUTA]` | Carga el CSV en `synopsis` y reporta títulos no encontrados | No |
 | `python manage.py update_images` | Descarga el póster Higgsfield de la **primera** película y actualiza `poster` (con `break`) | No (usa el job ya generado) |
 | `python manage.py update_images_from_folder` | Asigna `media/movie/images/m_<title_slug>.png` a cada película | No |
@@ -184,15 +184,15 @@ Van en [capturas_taller3/](capturas_taller3/) (lista completa en [capturas_talle
 
 | Proveedor | Detalle | Costo |
 |---|---|---|
-| Claude (Haiku 4.5) | 148 sinopsis (piloto 5 + batch 143), 0 fallidas, 0 truncadas; ≈27 k tokens de entrada, ≈18.5 k de salida | **US$0.12** |
+| Claude (Haiku 4.5) | 148 sinopsis (piloto 5 + lote 143), 0 fallidas, 0 truncadas; ≈27 k tokens de entrada, ≈18.5 k de salida | **US$0.12** |
 | Higgsfield (`z_image`) | 76 generaciones × 0.15 (62 pósters finales + descartados y reintentos) | **11.4 créditos** |
 | sentence-transformers | Local | $0 |
 
 ### Comparación de modelos de embeddings
 
-10 prompts de prueba con respuesta conocida (top-1 exacto):
+10 prompts de prueba con respuesta conocida (acierto en 1.er lugar):
 
-| Modelo | Texto embebido | Top-1 exacto |
+| Modelo | Texto embebido | Acierto en 1.er lugar |
 |---|---|---|
 | `paraphrase-multilingual-MiniLM-L12-v2` | sinopsis | 4/10 |
 | `paraphrase-multilingual-MiniLM-L12-v2` | título + género + sinopsis | 5/10 |
@@ -228,7 +228,7 @@ Las similitudes de E5 se concentran en un rango alto (0.8–0.9) por cómo está
 
 Las pruebas de la vista usan el modelo local real (sin APIs externas).
 
-## Troubleshooting
+## Solución de problemas
 
 | Problema | Solución |
 |---|---|
@@ -240,12 +240,12 @@ Las pruebas de la vista usan el modelo local real (sin APIs externas).
 | Higgsfield responde `429 rate_limit_reached` | Enviar los lotes de forma secuencial, no en paralelo |
 | `git push` falla con "unexpected disconnect" | `git config http.postBuffer 524288000` |
 
-## Authors
+## Autor
 
 Miguel A. Colorado Castaño
 
-Course: ST0251 Proyecto Integrador 1 (PI1)
-Professor: Wilmer Alberto Gil Moreno
-University: EAFIT University | School of Applied Sciences and Engineering
-Program: Systems Engineering
-Year: 2026-2
+Curso: ST0251 Proyecto Integrador 1 (PI1)
+Profesor: Wilmer Alberto Gil Moreno
+Universidad: Universidad EAFIT | Escuela de Ciencias Aplicadas e Ingeniería
+Programa: Ingeniería de Sistemas
+Año: 2026-2
