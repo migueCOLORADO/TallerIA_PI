@@ -13,6 +13,8 @@
    1. [Requisitos](#requisitos)
    2. [Instalación (Windows PowerShell)](#instalación-windows-powershell)
    3. [Capturas](#capturas)
+   4. [Entregable en PDF](#entregable-en-pdf)
+   5. [Video de demostración](#video-de-demostración)
 4. [Comandos](#comandos)
 5. [Resultados](#resultados)
    1. [Gasto real](#gasto-real)
@@ -182,6 +184,10 @@ URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/ad
 ### Entregable en PDF
 
 Documento con evidencia completa (links de repositorio, comando ejecutado y captura por cada requerimiento del taller): [Taller3_TallerIA_PI_Entregable.pdf](Taller3_TallerIA_PI_Entregable.pdf).
+
+### Video de demostración
+
+Recorrido por la aplicación y la ejecución de los comandos del taller: https://youtu.be/01Ss10SWZ38
 
 ## Comandos
 
