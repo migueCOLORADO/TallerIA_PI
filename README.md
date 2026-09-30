@@ -12,17 +12,18 @@
 3. [Cómo ejecutar](#cómo-ejecutar)
    1. [Requisitos](#requisitos)
    2. [Instalación (Windows PowerShell)](#instalación-windows-powershell)
-   3. [Capturas](#capturas)
-   4. [Entregable en PDF](#entregable-en-pdf)
-   5. [Video de demostración](#video-de-demostración)
 4. [Comandos](#comandos)
 5. [Resultados](#resultados)
-   1. [Gasto real](#gasto-real)
-   2. [Comparación de modelos de embeddings](#comparación-de-modelos-de-embeddings)
-   3. [Monte Carlo](#monte-carlo)
-   4. [Pruebas unitarias](#pruebas-unitarias)
-6. [Solución de problemas](#solución-de-problemas)
-7. [Autor](#autor)
+   1. [Resultados técnicos](#resultados-técnicos)
+      1. Gasto real
+      2. Comparación de modelos de embeddings
+      3. Monte Carlo
+      4. Pruebas unitarias
+   2. [Resultados de la implementación](#resultados-de-la-implementación)
+      1. [Capturas](#capturas)
+      2. [Entregable en PDF](#entregable-en-pdf)
+      3. [Video de demostración](#video-de-demostración)
+6. [Autor](#autor)
 
 ## Descripción
 
@@ -99,7 +100,7 @@ Higgsfield se usó a través de su **servidor MCP** (disponible para el agente e
 ### Embeddings: sentence-transformers en vez de OpenAI
 
 - Modelo local `intfloat/multilingual-e5-small` (~470 MB, 384 dimensiones): sin costo por consulta, sin API key y sin enviar datos a terceros.
-- No se usó `all-MiniLM-L6-v2` porque está entrenado casi solo en inglés y las sinopsis y prompts están en español (ver [comparación](#comparación-de-modelos-de-embeddings)).
+- No se usó `all-MiniLM-L6-v2` porque está entrenado casi solo en inglés y las sinopsis y prompts están en español (ver [comparación de modelos](#resultados-técnicos)).
 - E5 espera los prefijos `query: ` (prompt del usuario) y `passage: ` (texto de la película), aplicados en `movie/ai_utils.py`.
 - El modelo se descarga una sola vez y luego se carga desde la caché local.
 
@@ -152,7 +153,87 @@ python manage.py runserver
 
 URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/admin/`.
 
-### Capturas
+## Comandos
+
+| Comando | Qué hace | ¿Gasta API? |
+|---|---|---|
+| `python manage.py update_descriptions` | Enriquece con Claude la sinopsis de la **primera** película (patrón del taller, con `break`) | Sí (1 llamada) |
+| `python aux_files/generate_descriptions_batch.py [--limit N] [--titles "A\|B"]` | Lote de Claude → `updated_movie_descriptions.csv` (`Title,Updated Description`) | Sí |
+| `python manage.py update_movies_from_csv [--csv RUTA]` | Carga el CSV en `synopsis` y reporta títulos no encontrados | No |
+| `python manage.py update_images` | Descarga el póster Higgsfield de la **primera** película y actualiza `poster` (con `break`) | No (usa el job ya generado) |
+| `python manage.py update_images_from_folder` | Asigna `media/movie/images/m_<title_slug>.png` a cada película | No |
+| `python manage.py movie_similarities [--movie1 --movie2 --prompt]` | Similitud coseno entre 2 películas y un prompt (por defecto Interstellar vs The Godfather, "película de ciencia ficción") | No |
+| `python manage.py movie_embeddings` | Embedding de las 148 películas → campo `emb` | No |
+| `python manage.py show_random_embedding [--n 10]` | Muestra el embedding de una película al azar | No |
+| `python manage.py montecarlo_recommendation_eval [--n 200 --seed 42]` | Simulación Monte Carlo → `montecarlo_results.txt` | No |
+
+## Resultados
+
+### Resultados técnicos
+
+<details>
+<summary><b>Gasto real</b></summary>
+
+| Proveedor | Detalle | Costo |
+|---|---|---|
+| Claude (Haiku 4.5) | 148 sinopsis (piloto 5 + lote 143), 0 fallidas, 0 truncadas; ≈27 k tokens de entrada, ≈18.5 k de salida | **US$0.12** |
+| Higgsfield (`z_image`) | 76 generaciones × 0.15 (62 pósters finales + descartados y reintentos) | **11.4 créditos** |
+| sentence-transformers | Local | $0 |
+
+</details>
+
+<details>
+<summary><b>Comparación de modelos de embeddings</b></summary>
+
+10 prompts de prueba con respuesta conocida (acierto en 1.er lugar):
+
+| Modelo | Texto embebido | Acierto en 1.er lugar |
+|---|---|---|
+| `paraphrase-multilingual-MiniLM-L12-v2` | sinopsis | 4/10 |
+| `paraphrase-multilingual-MiniLM-L12-v2` | título + género + sinopsis | 5/10 |
+| `intfloat/multilingual-e5-small` | título + género + sinopsis | **7/10** (9/10 contando respuestas razonables fuera de la lista, p. ej. *Gertie the Dinosaur* para "dinosaurios") |
+| `paraphrase-multilingual-mpnet-base-v2` (1.1 GB) | título + género + sinopsis | 8/10 |
+
+E5-small se eligió por la relación calidad/tamaño.
+
+</details>
+
+<details>
+<summary><b>Monte Carlo</b></summary>
+
+200 prompts aleatorios (géneros, temas y tonos del catálogo), semilla 42; detalle en [montecarlo_results.txt](montecarlo_results.txt):
+
+| Métrica | Valor |
+|---|---|
+| Éxito (película válida, similitud en [-1, 1]) | **200/200 (100 %)** |
+| Similitud promedio / mínima / máxima | 0.8516 / 0.8178 / 0.8985 |
+| Tiempo promedio (embedding + búsqueda) | **26.9 ms** |
+| Mediana / p95 / máximo | 26.4 ms / 34.3 ms / 154.2 ms |
+| Películas distintas recomendadas | 58 de 148 |
+| Carga del modelo (una vez, excluida) | ~24 s |
+
+Las similitudes de E5 se concentran en un rango alto (0.8–0.9) por cómo está entrenado el modelo; lo que importa es el orden relativo.
+
+</details>
+
+<details>
+<summary><b>Pruebas unitarias</b></summary>
+
+`python manage.py test` → **25 pruebas, todas pasan**. Las 13 nuevas (`movie/tests.py`):
+
+- `Movie.emb` acepta binario y se lee con `np.frombuffer`.
+- Similitud coseno: idénticos → 1.0, ortogonales → 0.0, opuestos → -1.0, vector cero sin división por cero.
+- `update_movies_from_csv` actualiza `synopsis` y reporta títulos no encontrados.
+- `update_images_from_folder` asigna `poster` y no toca películas sin archivo.
+- Vista `recommend`: GET 200 con el template correcto; POST válido retorna la película esperada; prompt vacío → error; sin embeddings → mensaje sin fallar; navbar con enlace.
+
+Las pruebas de la vista usan el modelo local real (sin APIs externas).
+
+</details>
+
+### Resultados de la implementación
+
+#### Capturas
 
 1. **`update_descriptions.py`** (`python manage.py update_descriptions`)
 
@@ -181,90 +262,13 @@ URLs: `/`, `/movies/`, `/series/`, `/news/`, `/statistics/`, `/recommend/`, `/ad
 
    ![Terminal de show_random_embedding](<capturas/Taller 3/6_show_random_embedding.png>)
 
-### Entregable en PDF
+#### Entregable en PDF
 
 Documento con evidencia completa (links de repositorio, comando ejecutado y captura por cada requerimiento del taller): [Taller3_TallerIA_PI_Entregable.pdf](Taller3_TallerIA_PI_Entregable.pdf).
 
-### Video de demostración
+#### Video de demostración
 
 Recorrido por la aplicación y la ejecución de los comandos del taller: https://youtu.be/01Ss10SWZ38
-
-## Comandos
-
-| Comando | Qué hace | ¿Gasta API? |
-|---|---|---|
-| `python manage.py update_descriptions` | Enriquece con Claude la sinopsis de la **primera** película (patrón del taller, con `break`) | Sí (1 llamada) |
-| `python aux_files/generate_descriptions_batch.py [--limit N] [--titles "A\|B"]` | Lote de Claude → `updated_movie_descriptions.csv` (`Title,Updated Description`) | Sí |
-| `python manage.py update_movies_from_csv [--csv RUTA]` | Carga el CSV en `synopsis` y reporta títulos no encontrados | No |
-| `python manage.py update_images` | Descarga el póster Higgsfield de la **primera** película y actualiza `poster` (con `break`) | No (usa el job ya generado) |
-| `python manage.py update_images_from_folder` | Asigna `media/movie/images/m_<title_slug>.png` a cada película | No |
-| `python manage.py movie_similarities [--movie1 --movie2 --prompt]` | Similitud coseno entre 2 películas y un prompt (por defecto Interstellar vs The Godfather, "película de ciencia ficción") | No |
-| `python manage.py movie_embeddings` | Embedding de las 148 películas → campo `emb` | No |
-| `python manage.py show_random_embedding [--n 10]` | Muestra el embedding de una película al azar | No |
-| `python manage.py montecarlo_recommendation_eval [--n 200 --seed 42]` | Simulación Monte Carlo → `montecarlo_results.txt` | No |
-
-## Resultados
-
-### Gasto real
-
-| Proveedor | Detalle | Costo |
-|---|---|---|
-| Claude (Haiku 4.5) | 148 sinopsis (piloto 5 + lote 143), 0 fallidas, 0 truncadas; ≈27 k tokens de entrada, ≈18.5 k de salida | **US$0.12** |
-| Higgsfield (`z_image`) | 76 generaciones × 0.15 (62 pósters finales + descartados y reintentos) | **11.4 créditos** |
-| sentence-transformers | Local | $0 |
-
-### Comparación de modelos de embeddings
-
-10 prompts de prueba con respuesta conocida (acierto en 1.er lugar):
-
-| Modelo | Texto embebido | Acierto en 1.er lugar |
-|---|---|---|
-| `paraphrase-multilingual-MiniLM-L12-v2` | sinopsis | 4/10 |
-| `paraphrase-multilingual-MiniLM-L12-v2` | título + género + sinopsis | 5/10 |
-| `intfloat/multilingual-e5-small` | título + género + sinopsis | **7/10** (9/10 contando respuestas razonables fuera de la lista, p. ej. *Gertie the Dinosaur* para "dinosaurios") |
-| `paraphrase-multilingual-mpnet-base-v2` (1.1 GB) | título + género + sinopsis | 8/10 |
-
-E5-small se eligió por la relación calidad/tamaño.
-
-### Monte Carlo
-
-200 prompts aleatorios (géneros, temas y tonos del catálogo), semilla 42; detalle en [montecarlo_results.txt](montecarlo_results.txt):
-
-| Métrica | Valor |
-|---|---|
-| Éxito (película válida, similitud en [-1, 1]) | **200/200 (100 %)** |
-| Similitud promedio / mínima / máxima | 0.8516 / 0.8178 / 0.8985 |
-| Tiempo promedio (embedding + búsqueda) | **26.9 ms** |
-| Mediana / p95 / máximo | 26.4 ms / 34.3 ms / 154.2 ms |
-| Películas distintas recomendadas | 58 de 148 |
-| Carga del modelo (una vez, excluida) | ~24 s |
-
-Las similitudes de E5 se concentran en un rango alto (0.8–0.9) por cómo está entrenado el modelo; lo que importa es el orden relativo.
-
-### Pruebas unitarias
-
-`python manage.py test` → **25 pruebas, todas pasan**. Las 13 nuevas (`movie/tests.py`):
-
-- `Movie.emb` acepta binario y se lee con `np.frombuffer`.
-- Similitud coseno: idénticos → 1.0, ortogonales → 0.0, opuestos → -1.0, vector cero sin división por cero.
-- `update_movies_from_csv` actualiza `synopsis` y reporta títulos no encontrados.
-- `update_images_from_folder` asigna `poster` y no toca películas sin archivo.
-- Vista `recommend`: GET 200 con el template correcto; POST válido retorna la película esperada; prompt vacío → error; sin embeddings → mensaje sin fallar; navbar con enlace.
-
-Las pruebas de la vista usan el modelo local real (sin APIs externas).
-
-## Solución de problemas
-
-| Problema | Solución |
-|---|---|
-| PowerShell bloquea `Activate.ps1` | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` |
-| `ANTHROPIC_API_KEY no está definida` | Crear `.env` en la raíz con `ANTHROPIC_API_KEY=...` |
-| Primera ejecución de embeddings lenta / aviso de symlinks en Windows | Es la descarga única del modelo (~470 MB); el aviso es inofensivo |
-| `/recommend/` muestra "Cargando el modelo de IA…" justo después de iniciar el servidor | El modelo se precarga en segundo plano (~25–40 s en Windows); la página reintenta sola y muestra el resultado al terminar |
-| Editar una película con póster IA desde `/admin/` rechaza el campo `poster` | `poster` es `URLField` y guarda rutas relativas (`/media/movie/images/...`); se muestra bien en todas las vistas. No se cambió el campo para no modificar el modelo más allá de `emb` |
-| Higgsfield marca un prompt como NSFW o devuelve imagen en negro | Reescribir el prompt (ver `PROMPT_OVERRIDES` en `aux_files/build_higgsfield_manifest.py`) |
-| Higgsfield responde `429 rate_limit_reached` | Enviar los lotes de forma secuencial, no en paralelo |
-| `git push` falla con "unexpected disconnect" | `git config http.postBuffer 524288000` |
 
 ## Autor
 
